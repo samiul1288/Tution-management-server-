@@ -27,6 +27,7 @@ app.use(cookieParser());
 app.get("/", (req, res) => {
   res.send("eTuitionBd API running");
 });
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 // ✅ routes
 app.use("/api/auth", authRoutes);
