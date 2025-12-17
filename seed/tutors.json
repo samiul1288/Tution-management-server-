@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Rahim Uddin",
+    "email": "rahim@gmail.com",
+    "role": "tutor",
+    "phone": "01711111111",
+    "qualification": "BSc in Mathematics",
+    "experience": "5 years",
+    "photoURL": "https://i.pravatar.cc/150?img=12"
+  },
+  {
+    "name": "Karima Akter",
+    "email": "karima@gmail.com",
+    "role": "tutor",
+    "phone": "01822222222",
+    "qualification": "MSc in Physics",
+    "experience": "3 years",
+    "photoURL": "https://i.pravatar.cc/150?img=32"
+  }
+]
