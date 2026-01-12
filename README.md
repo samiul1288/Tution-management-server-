@@ -3,6 +3,15 @@
 Tuition Management System Server is a backend application that provides RESTful APIs to manage tuition-related data such as users, students, tutors, and tuition records securely and efficiently.
 
 ---
+## 🔑 Demo Credentials
+
+### Student
+Email: student@test.com  
+Password: 123456  
+
+### Admin
+Email: admin@test.com  
+Password: 123456  
 
 ## 🔗 Live Server Link
 - Server URL: https://tution-management-server.onrender.com
