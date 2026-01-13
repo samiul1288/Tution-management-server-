@@ -14,22 +14,31 @@ import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
-// ✅ middleware first
+// ✅ CORS (keep first)
+const allowedOrigins = [process.env.CLIENT_URL, "http://localhost:5173"].filter(
+  Boolean
+);
+
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL, "http://localhost:5173"],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
-app.use(express.json());
+
+// ✅ parsers
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
-  res.send("eTuitionBd API running");
-});
+// ✅ health routes
+app.get("/", (req, res) => res.send("eTuitionBd API running ✅"));
+app.get("/health", (req, res) =>
+  res.json({ ok: true, uptime: process.uptime() })
+);
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-// ✅ routes
+// ✅ API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/tuitions", tuitionsRoutes);
@@ -37,7 +46,7 @@ app.use("/api/applications", applicationsRoutes);
 app.use("/api/payments", paymentsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-// ✅ error handlers last
+// ✅ 404 + error handler (last)
 app.use(notFound);
 app.use(errorHandler);
 

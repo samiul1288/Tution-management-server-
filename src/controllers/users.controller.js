@@ -202,3 +202,25 @@ export const deleteUserAdmin = async (req, res, next) => {
     next(e);
   }
 };
+// GET /api/public/contacts?role=student|tutor|admin
+export const getPublicContacts = async (req, res, next) => {
+  try {
+    const { role } = req.query;
+
+    const filter = {};
+    // role দিলে filter করবে, না দিলে সবাই দিবে
+    if (role && ["student", "tutor", "admin"].includes(role)) {
+      filter.role = role;
+    }
+
+    // public info only (no sensitive fields)
+    const users = await User.find(filter)
+      .select("name email role phone photoURL")
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    res.json({ success: true, data: users });
+  } catch (e) {
+    next(e);
+  }
+};

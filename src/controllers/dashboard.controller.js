@@ -1,22 +1,51 @@
+// src/controllers/dashboard.controller.js
 import User from "../models/User.model.js";
 import Tuition from "../models/Tuition.model.js";
+import Application from "../models/Application.model.js";
 import Payment from "../models/Payment.model.js";
 
+// ✅ Public stats (no auth needed)
+export const getPublicStats = async (req, res, next) => {
+  try {
+    const [totalUsers, totalTuitions, totalApplications] = await Promise.all([
+      User.countDocuments(),
+      Tuition.countDocuments(),
+      Application.countDocuments(),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: { totalUsers, totalTuitions, totalApplications },
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+// ✅ Admin analytics
 export const getAdminAnalytics = async (req, res, next) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const totalStudents = await User.countDocuments({ role: "student" });
-    const totalTutors = await User.countDocuments({ role: "tutor" });
-    const totalAdmins = await User.countDocuments({ role: "admin" });
+    const [
+      totalUsers,
+      totalStudents,
+      totalTutors,
+      totalAdmins,
 
-    const totalTuitions = await Tuition.countDocuments();
-    const pendingTuitions = await Tuition.countDocuments({ status: "PENDING" });
-    const approvedTuitions = await Tuition.countDocuments({
-      status: "APPROVED",
-    });
-    const rejectedTuitions = await Tuition.countDocuments({
-      status: "REJECTED",
-    });
+      totalTuitions,
+      pendingTuitions,
+      approvedTuitions,
+      rejectedTuitions,
+    ] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ role: "student" }),
+      User.countDocuments({ role: "tutor" }),
+      User.countDocuments({ role: "admin" }),
+
+      Tuition.countDocuments(),
+      Tuition.countDocuments({ status: "PENDING" }),
+      Tuition.countDocuments({ status: "APPROVED" }),
+      Tuition.countDocuments({ status: "REJECTED" }),
+    ]);
 
     const revenueAgg = await Payment.aggregate([
       { $match: { status: "SUCCESS" } },
@@ -28,10 +57,11 @@ export const getAdminAnalytics = async (req, res, next) => {
         },
       },
     ]);
+
     const totalRevenue = revenueAgg?.[0]?.totalRevenue || 0;
     const totalPayments = revenueAgg?.[0]?.totalPayments || 0;
 
-    // last 6 months revenue
+    // ✅ last 6 months revenue
     const monthly = await Payment.aggregate([
       { $match: { status: "SUCCESS" } },
       {
@@ -45,7 +75,7 @@ export const getAdminAnalytics = async (req, res, next) => {
       { $limit: 6 },
     ]);
 
-    // top tutors by revenue
+    // ✅ top tutors by revenue
     const topTutors = await Payment.aggregate([
       { $match: { status: "SUCCESS" } },
       {
@@ -59,7 +89,8 @@ export const getAdminAnalytics = async (req, res, next) => {
       { $limit: 5 },
     ]);
 
-    res.json({
+    return res.status(200).json({
+      success: true,
       users: { totalUsers, totalStudents, totalTutors, totalAdmins },
       tuitions: {
         totalTuitions,
