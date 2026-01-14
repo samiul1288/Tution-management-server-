@@ -16,45 +16,39 @@ import {
 
 const router = express.Router();
 
-/* =========================
-   PUBLIC
-========================= */
-router.get("/", getAllTuitions); // public list
+/* PUBLIC */
+router.get("/", getAllTuitions);
 
-/* =========================
-   STUDENT (STATIC FIRST)
-========================= */
-router.get("/me", verifyJWT, verifyRole("student"), getMyTuitions);
-router.post("/", verifyJWT, verifyRole("student"), createTuition);
-router.patch("/:id", verifyJWT, verifyRole("student"), updateTuition);
-router.delete("/:id", verifyJWT, verifyRole("student"), deleteTuition);
+/* STUDENT */
+router.get("/me", verifyJWT, verifyRole(["student"]), getMyTuitions);
+router.post("/", verifyJWT, verifyRole(["student"]), createTuition);
+router.patch("/:id", verifyJWT, verifyRole(["student"]), updateTuition);
+router.delete("/:id", verifyJWT, verifyRole(["student"]), deleteTuition);
 
-/* =========================
-   TUTOR (STATIC FIRST)
-========================= */
+/* TUTOR */
 router.get(
   "/tutor/ongoing",
   verifyJWT,
-  verifyRole("tutor"),
+  verifyRole(["tutor"]),
   getTutorOngoingTuitions
 );
-router.get("/ongoing", verifyJWT, verifyRole("tutor"), getTutorOngoingTuitions);
-/* =========================
-   ADMIN (STATIC FIRST)
-========================= */
-router.get("/admin", verifyJWT, verifyRole("admin"), getAllTuitionsAdmin);
+router.get(
+  "/ongoing",
+  verifyJWT,
+  verifyRole(["tutor"]),
+  getTutorOngoingTuitions
+);
 
-// ✅ match frontend: /tuitions/${id}/status
+/* ADMIN */
+router.get("/admin", verifyJWT, verifyRole(["admin"]), getAllTuitionsAdmin);
 router.patch(
   "/:id/status",
   verifyJWT,
-  verifyRole("admin"),
+  verifyRole(["admin"]),
   updateTuitionStatus
 );
 
-/* =========================
-   DYNAMIC ROUTE LAST
-========================= */
-router.get("/:id", getTuitionById); // public details (must be last)
+/* DYNAMIC LAST */
+router.get("/:id", getTuitionById);
 
 export default router;

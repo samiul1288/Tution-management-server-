@@ -17,7 +17,7 @@ dotenv.config({ path: path.join(__dirname, "../.env") });
 console.log("CWD:", process.cwd());
 console.log("STRIPE KEY LOADED?", !!process.env.STRIPE_SECRET_KEY);
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 const server = http.createServer(app);
 
 const shutdown = (signal) => {

@@ -15,7 +15,7 @@ router.get("/public-stats", getPublicStats);
 router.get(
   "/admin-analytics",
   verifyJWT,
-  verifyRole("admin"),
+  verifyRole(["admin"]),
   getAdminAnalytics
 );
 

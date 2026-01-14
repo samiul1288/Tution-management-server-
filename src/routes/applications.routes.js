@@ -1,30 +1,48 @@
-import express from "express";
+import { Router } from "express";
+import verifyJWT from "../middleware/verifyJWT.js";
+import verifyRole from "../middleware/verifyRole.js";
+
 import {
   createApplication,
   getMyApplications,
   getApplicationsForTuition,
   rejectApplication,
+  getTutorApplications,
+  getStudentApplications,
 } from "../controllers/applications.controller.js";
-import  verifyJWT  from "../middleware/verifyJWT.js";
-import  verifyRole  from "../middleware/verifyRole.js";
 
-const router = express.Router();
+const router = Router();
 
-// tutor
-router.post("/", verifyJWT, verifyRole("tutor"), createApplication);
-router.get("/my", verifyJWT, verifyRole("tutor"), getMyApplications);
+// tutor apply
+router.post("/", verifyJWT, verifyRole(["tutor"]), createApplication);
 
-// student
+// tutor own applications
+router.get("/my", verifyJWT, verifyRole(["tutor"]), getMyApplications);
+
+// ✅ tutor dashboard safe endpoint
+router.get("/tutor", verifyJWT, verifyRole(["tutor"]), getTutorApplications);
+
+// ✅ student dashboard safe endpoint
+router.get(
+  "/student",
+  verifyJWT,
+  verifyRole(["student"]),
+  getStudentApplications
+);
+
+// student view applications for a tuition
 router.get(
   "/tuition/:tuitionId",
   verifyJWT,
-  verifyRole("student"),
+  verifyRole(["student"]),
   getApplicationsForTuition
 );
+
+// student reject
 router.patch(
   "/:id/reject",
   verifyJWT,
-  verifyRole("student"),
+  verifyRole(["student"]),
   rejectApplication
 );
 

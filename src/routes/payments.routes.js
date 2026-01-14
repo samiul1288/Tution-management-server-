@@ -20,10 +20,10 @@ router.post(
 );
 
 
-router.post("/confirm", verifyJWT, verifyRole("student"), confirmPayment);
+router.post("/confirm", verifyJWT, verifyRole(["student"]), confirmPayment);
 
-router.get("/my", verifyJWT, verifyRole("tutor", "student"), getMyPayments);
+router.get("/my", verifyJWT, verifyRole(["tutor", "student"]), getMyPayments);
 // tutor
-router.get("/tutor/my", verifyJWT, verifyRole("tutor"), getTutorPayments);
+router.get("/tutor/my", verifyJWT, verifyRole(["tutor"]), getTutorPayments);
 
 export default router;

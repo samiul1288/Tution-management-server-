@@ -23,6 +23,7 @@ export const getPublicStats = async (req, res, next) => {
 };
 
 // ✅ Admin analytics
+// ✅ Admin analytics
 export const getAdminAnalytics = async (req, res, next) => {
   try {
     const [
@@ -30,7 +31,6 @@ export const getAdminAnalytics = async (req, res, next) => {
       totalStudents,
       totalTutors,
       totalAdmins,
-
       totalTuitions,
       pendingTuitions,
       approvedTuitions,
@@ -47,47 +47,60 @@ export const getAdminAnalytics = async (req, res, next) => {
       Tuition.countDocuments({ status: "REJECTED" }),
     ]);
 
-    const revenueAgg = await Payment.aggregate([
-      { $match: { status: "SUCCESS" } },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: "$amount" },
-          totalPayments: { $sum: 1 },
-        },
-      },
-    ]);
+    // ✅ default safe values (payment part fail হলেও 200 যাবে)
+    let totalRevenue = 0;
+    let totalPayments = 0;
+    let monthly = [];
+    let topTutors = [];
 
-    const totalRevenue = revenueAgg?.[0]?.totalRevenue || 0;
-    const totalPayments = revenueAgg?.[0]?.totalPayments || 0;
-
-    // ✅ last 6 months revenue
-    const monthly = await Payment.aggregate([
-      { $match: { status: "SUCCESS" } },
-      {
-        $group: {
-          _id: { y: { $year: "$createdAt" }, m: { $month: "$createdAt" } },
-          revenue: { $sum: "$amount" },
-          count: { $sum: 1 },
+    // ✅ Payment aggregate (safe + debug)
+    try {
+      // 1) revenue
+      const revenueAgg = await Payment.aggregate([
+        { $match: { status: "SUCCESS" } },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: "$amount" },
+            totalPayments: { $sum: 1 },
+          },
         },
-      },
-      { $sort: { "_id.y": -1, "_id.m": -1 } },
-      { $limit: 6 },
-    ]);
+      ]);
 
-    // ✅ top tutors by revenue
-    const topTutors = await Payment.aggregate([
-      { $match: { status: "SUCCESS" } },
-      {
-        $group: {
-          _id: "$tutorId",
-          revenue: { $sum: "$amount" },
-          count: { $sum: 1 },
+      totalRevenue = revenueAgg?.[0]?.totalRevenue || 0;
+      totalPayments = revenueAgg?.[0]?.totalPayments || 0;
+
+      // 2) monthly
+      monthly = await Payment.aggregate([
+        { $match: { status: "SUCCESS" } },
+        {
+          $group: {
+            _id: { y: { $year: "$createdAt" }, m: { $month: "$createdAt" } },
+            revenue: { $sum: "$amount" },
+            count: { $sum: 1 },
+          },
         },
-      },
-      { $sort: { revenue: -1 } },
-      { $limit: 5 },
-    ]);
+        { $sort: { "_id.y": -1, "_id.m": -1 } },
+        { $limit: 6 },
+      ]);
+
+      // 3) top tutors
+      topTutors = await Payment.aggregate([
+        { $match: { status: "SUCCESS" } },
+        {
+          $group: {
+            _id: "$tutorId",
+            revenue: { $sum: "$amount" },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { revenue: -1 } },
+        { $limit: 5 },
+      ]);
+    } catch (err) {
+      console.log("🔥 Payment analytics error:", err?.message);
+      console.log(err); // ✅ full error
+    }
 
     return res.status(200).json({
       success: true,
@@ -106,3 +119,4 @@ export const getAdminAnalytics = async (req, res, next) => {
     next(e);
   }
 };
+
